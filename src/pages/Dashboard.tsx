@@ -130,7 +130,6 @@ export default function Dashboard() {
     } catch (err: any) {
       import('../types/dictionary').then((module) => {
         const lowerWord = cleanWord.toLowerCase();
-        // Ép kiểu bất định hoặc kiểm tra để thỏa mãn compiler
         const localDict = (module as any).localDictionary;
         if (localDict && localDict[lowerWord]) {
           setDictResult(localDict[lowerWord]);
@@ -229,11 +228,12 @@ export default function Dashboard() {
       <div 
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className={`fixed inset-0 w-full h-full flex flex-col justify-between items-center px-4 overflow-hidden select-none z-[9999] p-6 style={{ perspective: "1500px" }} ${
+        className={`fixed inset-0 w-full h-full flex flex-col justify-between items-center px-4 overflow-hidden select-none z-[9999] p-6 ${
           isDarkMode 
             ? 'bg-[#030307] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#0a0a16] via-[#030307] to-[#010103]' 
             : 'bg-[#f4f5fa] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#e3e7ff] via-[#f4f5fa] to-[#ffffff]'
         }`}
+        style={{ perspective: "1500px" }}
       >
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div 
@@ -294,7 +294,7 @@ export default function Dashboard() {
           >
             <div className="absolute inset-0 rounded-[40px] p-[1px] bg-gradient-to-br from-purple-500/20 via-transparent to-cyan-500/20 pointer-events-none" />
 
-            <div className="relative w-40 h-40 mb-8 flex items-center justify-center" style={{ transformStyle: "preserve-3d", transform: "translateZ(60px)" }}>
+            <div className="relative w-40 h-40 mb-8 flex items-center justify-center" style={{ transformStyle: "preserve-3d" }}>
               <motion.div 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
@@ -306,7 +306,7 @@ export default function Dashboard() {
                 className="absolute inset-2 rounded-full border border-double border-cyan-500/30"
               />
               <motion.div
-                whileHover={{ scale: 1.1, rotateY: 180 }}
+                whileHover={{ scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
                 className="w-24 h-24 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-5xl shadow-[0_0_40px_rgba(147,51,234,0.5)] cursor-pointer"
               >
@@ -315,21 +315,18 @@ export default function Dashboard() {
             </div>
 
             <h1 
-              style={{ transform: "translateZ(40px)" }}
               className="text-4xl font-black tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-cyan-400 drop-shadow-md"
             >
               Chi Harry
             </h1>
 
             <p 
-              style={{ transform: "translateZ(30px)" }}
               className={`text-sm font-medium mb-8 tracking-wide px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
             >
               Hệ thống lõi ngôn ngữ đang sẵn sàng. Hãy kích hoạt cổng đăng nhập của bạn.
             </p>
 
             <motion.button
-              style={{ transform: "translateZ(50px)" }}
               whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(168,85,247,0.4)" }}
               whileTap={{ scale: 0.96 }}
               onClick={loginGoogle}
