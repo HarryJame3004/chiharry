@@ -15,6 +15,54 @@ export default function Vocabulary() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
+  // ==========================================
+  // HÀM PHÁT ÂM TIẾNG ĐỨC CHUẨN (FIX LỖI KHÔNG RA TIẾNG)
+  // ==========================================
+  const playGermanAudio = (textToSpeak: string, e?: React.MouseEvent) => {
+    // Ngăn chặn sự kiện click lan ra ngoài làm lật thẻ khi đang ở chế độ Flashcard
+    if (e) {
+      e.stopPropagation();
+    }
+
+    if (!('speechSynthesis' in window)) {
+      alert('Trình duyệt của bạn không hỗ trợ tính năng phát âm tự động.');
+      return;
+    }
+
+    // Hủy các giọng đọc đang chạy ngầm hoặc bị kẹt trước đó
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'de-DE'; // Định dạng ngôn ngữ Đức chuẩn
+    utterance.rate = 0.85;    // Tốc độ vừa phải để nghe rõ từng âm tiết
+
+    // Hàm tìm và gán giọng đọc tiếng Đức chất lượng cao
+    const assignVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const germanVoice = voices.find(voice => 
+        voice.lang.startsWith('de-DE') && 
+        (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Microsoft'))
+      ) || voices.find(voice => voice.lang.startsWith('de-DE'));
+
+      if (germanVoice) {
+        utterance.voice = germanVoice;
+      }
+    };
+
+    assignVoice();
+
+    // Sửa lỗi nạp chậm danh sách giọng đọc trên Chrome
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        assignVoice();
+        window.speechSynthesis.speak(utterance);
+      };
+    } else {
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+  // ==========================================
+
   const filteredVocab = useMemo(() => {
     return vocabularies.filter((v) => {
       const matchCategory = selectedCategory === 'all' || v.category === selectedCategory;
@@ -192,8 +240,12 @@ export default function Vocabulary() {
                       />
                     </button>
                   </div>
-                  <button className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}>
-                    <Volume2 size={14} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
+                  {/* KÍCH HOẠT PHÁT ÂM KHI BẤM NÚT LOA TRÊN DANH SÁCH TỪ */}
+                  <button 
+                    onClick={() => playGermanAudio(vocab.german)}
+                    className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/10 text-purple-400' : 'hover:bg-gray-100 text-purple-600'}`}
+                  >
+                    <Volume2 size={16} strokeWidth={2.5} />
                   </button>
                 </div>
 
@@ -285,6 +337,21 @@ export default function Vocabulary() {
                     style={{ backfaceVisibility: 'hidden' }}
                     className={`absolute inset-0 flex flex-col items-center justify-center p-8 ${flashcardState.isFlipped ? 'opacity-0' : 'opacity-100'}`}
                   >
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      {/* THÊM NÚT PHÁT ÂM RIÊNG Ở MẶT TRƯỚC THẺ FLASHCARD */}
+                      <button 
+                        onClick={(e) => playGermanAudio(currentCard.german, e)}
+                        className={`p-2 rounded-xl border transition-all ${
+                          isDarkMode 
+                            ? 'bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20' 
+                            : 'bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100'
+                        }`}
+                        title="Nghe phát âm"
+                      >
+                        <Volume2 size={18} strokeWidth={2.5} />
+                      </button>
+                    </div>
+
                     {currentCard.article && (
                       <span className={`text-sm font-bold px-3 py-1 rounded-full mb-4 ${
                         currentCard.article === 'der' ? 'bg-blue-500/20 text-blue-400' :
@@ -306,6 +373,21 @@ export default function Vocabulary() {
                     style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
                     className={`absolute inset-0 flex flex-col items-center justify-center p-8 ${flashcardState.isFlipped ? 'opacity-100' : 'opacity-0'}`}
                   >
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      {/* THÊM NÚT PHÁT ÂM RIÊNG Ở MẶT SAU THẺ FLASHCARD ĐỂ NGHE LẠI KHI CẦN */}
+                      <button 
+                        onClick={(e) => playGermanAudio(currentCard.german, e)}
+                        className={`p-2 rounded-xl border transition-all ${
+                          isDarkMode 
+                            ? 'bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20' 
+                            : 'bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100'
+                        }`}
+                        title="Nghe phát âm"
+                      >
+                        <Volume2 size={18} strokeWidth={2.5} />
+                      </button>
+                    </div>
+
                     <p className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>
                       {currentCard.vietnamese}
                     </p>
