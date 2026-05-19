@@ -128,10 +128,12 @@ export default function Dashboard() {
 
       setDictResult(formattedResult);
     } catch (err: any) {
-      import('../types/dictionary').then(({ localDictionary }) => {
+      import('../types/dictionary').then((module) => {
         const lowerWord = cleanWord.toLowerCase();
-        if (localDictionary[lowerWord]) {
-          setDictResult(localDictionary[lowerWord]);
+        // Ép kiểu bất định hoặc kiểm tra để thỏa mãn compiler
+        const localDict = (module as any).localDictionary;
+        if (localDict && localDict[lowerWord]) {
+          setDictResult(localDict[lowerWord]);
         } else {
           setDictError(err.message || 'Không tìm thấy dữ liệu từ điển.');
         }
@@ -148,7 +150,7 @@ export default function Dashboard() {
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = 'de-DE'; 
-      utterance.rate = 0.85;    
+      utterance.rate = 0.85;    
 
       const voices = window.speechSynthesis.getVoices();
       const germanVoice = voices.find(voice => voice.lang.startsWith('de-DE') && voice.name.includes('Google'));
@@ -211,7 +213,6 @@ export default function Dashboard() {
     }
   };
 
-  // 1. Màn hình Loading khi đang check trạng thái Firebase
   if (loading) {
     return (
       <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-[#040408] z-[99999]">
@@ -223,23 +224,18 @@ export default function Dashboard() {
     );
   }
 
-  // =========================================================
-  // 2. PORTAL ĐĂNG NHẬP CYBERPUNK (KHI CHƯA ĐĂNG NHẬP)
-  // =========================================================
   if (!currentUser) {
     return (
       <div 
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className={`fixed inset-0 w-full h-full flex flex-col justify-between items-center px-4 overflow-hidden select-none z-[9999] p-6 perspective-[1500px] ${
+        className={`fixed inset-0 w-full h-full flex flex-col justify-between items-center px-4 overflow-hidden select-none z-[9999] p-6 style={{ perspective: "1500px" }} ${
           isDarkMode 
             ? 'bg-[#030307] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#0a0a16] via-[#030307] to-[#010103]' 
             : 'bg-[#f4f5fa] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#e3e7ff] via-[#f4f5fa] to-[#ffffff]'
         }`}
       >
-        {/* BACKGROUND EFFECT: LƯỚI KHÔNG GIAN VÀ CÁC HẠT NĂNG LƯỢNG */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Lưới tọa độ 3D ảo giác */}
           <div 
             className={`absolute inset-0 opacity-[0.04] transition-all ${isDarkMode ? 'invert-0' : 'invert'}`} 
             style={{ 
@@ -249,7 +245,6 @@ export default function Dashboard() {
             }} 
           />
 
-          {/* Hai quầng sáng Ambient đuổi theo góc chuột */}
           <motion.div 
             style={{ x: spotlightX, y: spotlightY }}
             className="absolute top-[20%] left-[25%] w-[450px] h-[450px] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen"
@@ -259,7 +254,6 @@ export default function Dashboard() {
             className="absolute bottom-[20%] right-[25%] w-[450px] h-[450px] bg-cyan-500/15 blur-[120px] rounded-full mix-blend-screen"
           />
 
-          {/* Tạo 20 hạt năng lượng bay và phản hồi động nhẹ theo chuột */}
           {[...Array(20)].map((_, i) => {
             const randomX = Math.random() * 100;
             const randomY = Math.random() * 100;
@@ -289,7 +283,6 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* TRUNG TÂM: PORTAL DI ĐỘNG 3D */}
         <div className="flex-1 flex flex-col items-center justify-center text-center z-10 max-w-md w-full">
           <motion.div
             style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
@@ -299,24 +292,19 @@ export default function Dashboard() {
                 : 'bg-white/40 border-gray-200/60 shadow-purple-900/5'
             }`}
           >
-            {/* Viền Neon chạy ẩn xung quanh tấm kính */}
             <div className="absolute inset-0 rounded-[40px] p-[1px] bg-gradient-to-br from-purple-500/20 via-transparent to-cyan-500/20 pointer-events-none" />
 
-            {/* HOLOGRAPHIC PORTAL: Vòng tròn quỹ đạo chuyển động */}
-            <div className="relative w-40 h-40 mb-8 flex items-center justify-center" style={{ transformStyle: "preserve-3d", translateZ: 60 }}>
-              {/* Quỹ đạo ngoài */}
+            <div className="relative w-40 h-40 mb-8 flex items-center justify-center" style={{ transformStyle: "preserve-3d", transform: "translateZ(60px)" }}>
               <motion.div 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 rounded-full border border-dashed border-purple-500/40 p-2"
               />
-              {/* Quỹ đạo trong quay ngược lại */}
               <motion.div 
                 animate={{ rotate: -360 }}
                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-2 rounded-full border border-double border-cyan-500/30"
               />
-              {/* Tâm điểm chứa Cờ Đức phản chiếu mờ ảo */}
               <motion.div
                 whileHover={{ scale: 1.1, rotateY: 180 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
@@ -326,32 +314,28 @@ export default function Dashboard() {
               </motion.div>
             </div>
 
-            {/* TIÊU ĐỀ NỔI 3D */}
             <h1 
-              style={{ translateZ: 40 }}
+              style={{ transform: "translateZ(40px)" }}
               className="text-4xl font-black tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-cyan-400 drop-shadow-md"
             >
               Chi Harry
             </h1>
 
             <p 
-              style={{ translateZ: 30 }}
+              style={{ transform: "translateZ(30px)" }}
               className={`text-sm font-medium mb-8 tracking-wide px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
             >
               Hệ thống lõi ngôn ngữ đang sẵn sàng. Hãy kích hoạt cổng đăng nhập của bạn.
             </p>
 
-            {/* BUTTON CYBER BIOMETRIC SCANNER */}
             <motion.button
-              style={{ translateZ: 50 }}
+              style={{ transform: "translateZ(50px)" }}
               whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(168,85,247,0.4)" }}
               whileTap={{ scale: 0.96 }}
               onClick={loginGoogle}
               className="w-full relative py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 text-white font-bold tracking-wider text-sm shadow-lg overflow-hidden group flex items-center justify-center gap-3 border border-white/10"
             >
-              {/* Thanh quét laser chạy dọc liên tục tạo hiệu ứng Biometric */}
               <div className="absolute inset-y-0 w-1 bg-cyan-400 blur-sm top-0 bottom-0 left-0 animate-[laserScan_2s_infinite]" />
-              {/* Hiệu ứng màng quét khi hover chuột vào */}
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               <ShieldCheck size={18} className="text-cyan-300 animate-pulse" />
@@ -360,7 +344,6 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* FOOTER ĐIỆN TỬ */}
         <div 
           className={`text-[10px] font-mono tracking-[0.4em] uppercase font-bold flex flex-col items-center gap-1 opacity-40 ${
             isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -370,7 +353,6 @@ export default function Dashboard() {
           <span className="text-purple-500 animate-pulse">cre: tran ngoc minh khoi</span>
         </div>
 
-        {/* THÊM ANIMATION CUSTOM CHO THANH QUÉT LASER */}
         <style>{`
           @keyframes laserScan {
             0% { left: 0%; opacity: 0; }
@@ -383,16 +365,12 @@ export default function Dashboard() {
     );
   }
 
-  // =========================================================
-  // 3. GIAO DIỆN HỌC TẬP CHÍNH (KHI ĐÃ ĐĂNG NHẬP)
-  // =========================================================
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      {/* Thẻ Welcome chính */}
       <div
         className={`p-6 rounded-3xl border flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden ${
           isDarkMode ? 'bg-white/[0.03] border-white/10' : 'bg-white border-gray-100'
@@ -430,7 +408,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Grid thống kê chỉ số học tập */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Lernserie', value: `${userProgress.streak} Tage`, icon: Flame, color: 'from-orange-500 to-red-500', bgColor: 'bg-orange-500/10' },
@@ -454,7 +431,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* TÍCH HỢP KHUNG TỪ ĐIỂN ĐỨC - VIỆT CAO CẤP */}
       <div className={`p-6 rounded-3xl border backdrop-blur-sm ${
         isDarkMode ? 'bg-white/[0.03] border-white/10' : 'bg-white border-gray-100'
       }`}>
@@ -463,7 +439,6 @@ export default function Dashboard() {
           <h2>Wörterbuch (Từ điển Đức - Việt)</h2>
         </div>
 
-        {/* Thanh tìm kiếm */}
         <div className="flex gap-3 max-w-xl">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -488,7 +463,6 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Khu vực hiển thị kết quả động */}
         <div className="mt-4">
           <AnimatePresence mode="wait">
             {dictLoading && (
